@@ -100,3 +100,4 @@ mdb.Job(atTime=None, contactPrint=OFF, description='', echoPrint=OFF,
 
 # Submit job
 mdb.jobs[job_name].submit(consistencyChecking=OFF)
+mdb.jobs[job_name].waitForCompletion()
