@@ -41,8 +41,9 @@ mymodel.PartFromGeometryFile(combine=False, convertToAnalytical=1,
                              stitchTolerance=1.0, type=DEFORMABLE_BODY)
 mypart = mymodel.parts[part_name]
 
-# Define Set: all faces
+# Define Sets
 mypart.Set(faces=mypart.faces.getSequenceFromMask(('[#fffffff ]', ), ), name='all_faces')
+
 
 # Define Materials
 mymodel.Material(name=material_name)
@@ -63,6 +64,9 @@ mypart.PartitionCellByPlaneThreePoints(cells=mypart.cells.getSequenceFromMask(('
                                        point1=mypart.datums[5], point2=mypart.datums[4], point3=mypart.datums[7])
 mypart.PartitionCellByPlaneThreePoints(cells=mypart.cells.getSequenceFromMask(('[#3 ]', ),),
                                        point1=mypart.datums[5], point2=mypart.datums[4], point3=mypart.datums[6])
+
+mypart.Set(cells=mypart.cells.getSequenceFromMask(('[#f ]', ), ), name='whole')
+region_whole = mypart.sets['whole']
 
 # Define Assembly
 mymodel.rootAssembly.DatumCsysByDefault(CARTESIAN)
@@ -104,4 +108,29 @@ mdb.jobs[job_name].waitForCompletion()
 
 # Access results
 odb_name = job_name + '.odb'
-odb = openOdb(path=odb_name)
+odb = openOdb(path=odb_name, readOnly=True)
+odb_assembly = odb.rootAssembly
+odb_instance = odb_assembly.instances.keys()[0]
+odb_step1 = odb.steps.values()[0]
+frame = odb.steps[odb_step1.name].frames[-1]
+elemStress = frame.fieldOutputs['S']
+odb_set_whole = odb_assembly.elementSets[' ALL ELEMENTS']
+field = elemStress.getSubset(region=odb_set_whole, position=ELEMENT_NODAL)
+
+nodalS11 = {}
+for value in field.values:
+    if value.nodeLabel in nodalS11:
+        nodalS11[value.nodeLabel].append(value.data[0])
+    else:
+        nodalS11.update({value.nodeLabel: [value.data[0]]})
+
+for key in nodalS11:
+    nodalS11.update({key: sum(nodalS11[key]) / len(nodalS11[key])})
+
+print(nodalS11)
+
+# Print_result
+# with open('C:/Users/bowen/Desktop/abaqus_python/from_jnl/result.csv', 'w') as f:
+#     f.write('nodeLabel,S11\n')
+#     for value in field.values:
+#         f.write('%d,%f\n' % (value.nodeLabel, value.data[0]))
