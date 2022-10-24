@@ -101,3 +101,7 @@ mdb.Job(atTime=None, contactPrint=OFF, description='', echoPrint=OFF,
 # Submit job
 mdb.jobs[job_name].submit(consistencyChecking=OFF)
 mdb.jobs[job_name].waitForCompletion()
+
+# Access results
+odb_name = job_name + '.odb'
+odb = openOdb(path=odb_name)
