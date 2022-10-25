@@ -123,14 +123,22 @@ for value in field.values:
         nodalS11[value.nodeLabel].append(value.data[0])
     else:
         nodalS11.update({value.nodeLabel: [value.data[0]]})
-
 for key in nodalS11:
     nodalS11.update({key: sum(nodalS11[key]) / len(nodalS11[key])})
 
-print(nodalS11)
+# Exterior nodes
+node_object = mypart.sets['all_faces'].nodes
+node_labels = [node.label for node in node_object]
 
 # Print_result
-# with open('C:/Users/bowen/Desktop/abaqus_python/from_jnl/result.csv', 'w') as f:
-#     f.write('nodeLabel,S11\n')
-#     for value in field.values:
-#         f.write('%d,%f\n' % (value.nodeLabel, value.data[0]))
+with open('C:/Users/bowen/Desktop/abaqus_python/from_jnl/result.csv', 'w') as f:
+    f.write('nodeid,nodetype,x,y,z,s11\n')
+    for node_s11 in nodalS11.items():
+        nodeid, s11 = node_s11[0], node_s11[-1]
+        meshnode_object = mypart.nodes[nodeid - 1]
+        x, y, z = meshnode_object.coordinates[0], meshnode_object.coordinates[1], meshnode_object.coordinates[2]
+        if nodeid in node_labels:
+            nodetype = 1
+        else:
+            nodetype = 0
+        f.write('%d,%d,%f,%f,%f,%f\n' % (nodeid, nodetype, x, y, z, s11))
