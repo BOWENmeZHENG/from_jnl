@@ -93,6 +93,9 @@ mypart.setElementType(elemTypes=(ElemType(elemCode=C3D8R, elemLibrary=STANDARD),
                       regions=(mypart.cells.getSequenceFromMask(('[#f ]', ),), ))
 mypart.generateMesh()
 
+print(mypart.elements[0].label)
+print(mypart.elements[0].connectivity)
+
 # Define Job
 mymodel.rootAssembly.regenerate()
 mdb.Job(atTime=None, contactPrint=OFF, description='', echoPrint=OFF,
@@ -131,7 +134,7 @@ node_object = mypart.sets['all_faces'].nodes
 node_labels = [node.label for node in node_object]
 
 # Print_result
-with open('C:/Users/bowen/Desktop/abaqus_python/from_jnl/result.csv', 'w') as f:
+with open('C:/Users/bowen/Desktop/abaqus_python/from_jnl/nodes.csv', 'w') as f:
     f.write('nodeid,nodetype,x,y,z,s11\n')
     for node_s11 in nodalS11.items():
         nodeid, s11 = node_s11[0], node_s11[-1]
@@ -142,3 +145,9 @@ with open('C:/Users/bowen/Desktop/abaqus_python/from_jnl/result.csv', 'w') as f:
         else:
             nodetype = 0
         f.write('%d,%d,%f,%f,%f,%f\n' % (nodeid, nodetype, x, y, z, s11))
+
+with open('C:/Users/bowen/Desktop/abaqus_python/from_jnl/elements.csv', 'w') as f:
+    f.write('elementid,node1,node2,node3,node4\n')
+    for element in mypart.elements:
+        f.write('%d,%d,%d,%d,%d\n' % (element.label, element.connectivity[0], element.connectivity[1],
+                                   element.connectivity[2], element.connectivity[3]))
